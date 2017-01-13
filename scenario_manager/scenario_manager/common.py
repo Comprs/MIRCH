@@ -66,7 +66,7 @@ class DatabaseResourceForm(QtWidgets.QWidget, metaclass = QtABCMeta):
 
     @abstractmethod
     def reset_model(self):
-        """Adapts the form to a change of model or resource root."""
+        """Adapts the form to a change of database or resource root."""
         pass
 
 def resource_icon(model, index, resource_root = None):
