@@ -31,6 +31,15 @@ class ResourceForm(UiResourceFrom, DatabaseResourceForm):
         """Adds a resource to the end of the list."""
 
         if self.model:
+            # Make sure we have written out to the database.
+            if not self.model.submit():
+                QtWidgets.QMessageBox.critical(
+                    self,
+                    "Could not write the resource data",
+                    "Could not write the resource data. The data is likely invalid.",
+                    QtWidgets.QMessageBox.Ok,
+                )
+                return
             # Create a new item at the bottom of the list by getting the list length.
             new_index = self.model.rowCount()
             if self.model.insertRows(new_index, 1):
