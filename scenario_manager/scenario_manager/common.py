@@ -55,7 +55,6 @@ class DatabaseResourceForm(QtWidgets.QWidget, metaclass = QtABCMeta):
         super().__init__(parent)
         self.database = None
         self.resource_root = None
-        self.model = None
 
     def set_database(self, database):
         """Set a new database to interact with."""

@@ -15,24 +15,25 @@ class ResourceForm(UiResourceFrom, DatabaseResourceForm):
     def __init__(self, parent = None):
         super().__init__(parent)
         self.setupUi(self)
+        self._model = None
 
     def reset_model(self):
         # Implementation of the parent's abstract method.
         if self.database:
-            self.model = ResourceModel(self, self.database, self.resource_root)
-            self.resource_list.setModel(self.model)
-            self.resource_list.setModelColumn(self.model.fieldIndex("filename"))
+            self._model = ResourceModel(self, self.database, self.resource_root)
+            self.resource_list.setModel(self._model)
+            self.resource_list.setModelColumn(self._model.fieldIndex("filename"))
         else:
-            self.model = None
+            self._model = None
             self.resource_list.setModel(None)
 
     @QtCore.pyqtSlot()
     def add_resource(self):
         """Adds a resource to the end of the list."""
 
-        if self.model:
+        if self._model:
             # Make sure we have written out to the database.
-            if not self.model.submit():
+            if not self._model.submit():
                 QtWidgets.QMessageBox.critical(
                     self,
                     "Could not write the resource data",
@@ -41,10 +42,10 @@ class ResourceForm(UiResourceFrom, DatabaseResourceForm):
                 )
                 return
             # Create a new item at the bottom of the list by getting the list length.
-            new_index = self.model.rowCount()
-            if self.model.insertRows(new_index, 1):
+            new_index = self._model.rowCount()
+            if self._model.insertRows(new_index, 1):
                 # Immediately edit the new field if creation was a success.
-                self.resource_list.edit(self.model.index(new_index, 1))
+                self.resource_list.edit(self._model.index(new_index, 1))
             else:
                 # Raise an error dialogue otherwise.
                 QtWidgets.QMessageBox.critical(
@@ -58,10 +59,10 @@ class ResourceForm(UiResourceFrom, DatabaseResourceForm):
     def remove_resources(self):
         """Removes resources based on the indices selected in the view."""
 
-        if self.model:
+        if self._model:
             for index in self.resource_list.selectedIndexes():
-                self.model.removeRow(index.row(), index.parent())
-            self.model.select()
+                self._model.removeRow(index.row(), index.parent())
+            self._model.select()
 
 class ResourceModel(QtSql.QSqlTableModel):
     """This class represents the database table resources."""

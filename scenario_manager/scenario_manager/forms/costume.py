@@ -15,30 +15,30 @@ class CostumeForm(UiCostumeForm, DatabaseResourceForm):
     def __init__(self, parent = None):
         super().__init__(parent)
         self.setupUi(self)
-        self.model = None
-        self.relational_delegate = QtSql.QSqlRelationalDelegate(self.costume_table)
+        self._model = None
+        self._relational_delegate = QtSql.QSqlRelationalDelegate(self.costume_table)
 
     def reset_model(self):
         # Implementation of the parent's abstract method.
         if self.database:
-            self.model = CostumeModel(self, self.database, self.resource_root)
-            self.costume_table.setModel(self.model)
+            self._model = CostumeModel(self, self.database, self.resource_root)
+            self.costume_table.setModel(self._model)
             self.costume_table.setItemDelegateForColumn(
-                self.model.fieldIndex("filename"),
-                self.relational_delegate,
+                self._model.fieldIndex("filename"),
+                self._relational_delegate,
             )
-            self.costume_table.hideColumn(self.model.fieldIndex("id"))
+            self.costume_table.hideColumn(self._model.fieldIndex("id"))
         else:
-            self.model = None
+            self._model = None
             self.costume_table.setModel(None)
 
     @QtCore.pyqtSlot()
     def add_costume(self):
         """Adds a costume to the end of the table."""
 
-        if self.model:
+        if self._model:
             # Make sure we have written out to the database.
-            if not self.model.submit():
+            if not self._model.submit():
                 QtWidgets.QMessageBox.critical(
                     self,
                     "Could not write the costume data",
@@ -47,11 +47,11 @@ class CostumeForm(UiCostumeForm, DatabaseResourceForm):
                 )
                 return
             # Create a new item at the bottom of the list by getting the list length.
-            new_index = self.model.rowCount()
+            new_index = self._model.rowCount()
 
-            if self.model.insertRows(new_index, 1):
+            if self._model.insertRows(new_index, 1):
                 # Immediately edit the new field if creation was a success.
-                self.costume_table.edit(self.model.index(new_index, 1))
+                self.costume_table.edit(self._model.index(new_index, 1))
             else:
                 # Raise an error dialogue otherwise.
                 QtWidgets.QMessageBox.critical(
@@ -65,10 +65,10 @@ class CostumeForm(UiCostumeForm, DatabaseResourceForm):
     def remove_costumes(self):
         """Removes costumes based on the indices selected in the view."""
 
-        if self.model:
+        if self._model:
             for index in self.costume_table.selectedIndexes():
-                self.model.removeRow(index.row(), index.parent())
-            self.model.select()
+                self._model.removeRow(index.row(), index.parent())
+            self._model.select()
 
 class CostumeModel(QtSql.QSqlRelationalTableModel):
     """This class represents the database table costumes left joined with the table resources."""
