@@ -23,6 +23,7 @@ class ResourceForm(UiResourceFrom, DatabaseResourceForm):
             self.resource_list.setModel(self.model)
             self.resource_list.setModelColumn(1)
         else:
+            self.model = None
             self.resource_list.setModel(None)
 
     @QtCore.pyqtSlot()
@@ -30,9 +31,19 @@ class ResourceForm(UiResourceFrom, DatabaseResourceForm):
         """Adds a resource to the end of the list."""
 
         if self.model:
+            # Create a new item at the bottom of the list by getting the list length.
             new_index = self.model.rowCount()
-            self.model.insertRows(new_index, 1)
-            self.resource_list.edit(self.model.index(new_index, 1))
+            if self.model.insertRows(new_index, 1):
+                # Immediately edit the new field if creation was a success.
+                self.resource_list.edit(self.model.index(new_index, 1))
+            else:
+                # Raise an error dialogue otherwise.
+                QtWidgets.QMessageBox.critical(
+                    self,
+                    "Could not add a new resource",
+                    "Could not add a new resource.",
+                    QtWidgets.QMessageBox.Ok,
+                )
 
     @QtCore.pyqtSlot()
     def remove_resources(self):

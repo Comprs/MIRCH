@@ -3,7 +3,7 @@
 import os.path
 import PyQt5.uic
 from PyQt5.QtCore import Qt
-from PyQt5 import QtCore, QtSql
+from PyQt5 import QtCore, QtWidgets, QtSql
 from common import resource_icon, UI_SOURCE_LOCATION, DatabaseResourceForm
 
 COSTUME_FORM_SOURCE = os.path.join(UI_SOURCE_LOCATION, "form_costume.ui")
@@ -15,6 +15,7 @@ class CostumeForm(UiCostumeForm, DatabaseResourceForm):
     def __init__(self, parent = None):
         super().__init__(parent)
         self.setupUi(self)
+        self.model = None
         self.relational_delegate = QtSql.QSqlRelationalDelegate(self.costume_table)
 
     def reset_model(self):
@@ -25,6 +26,7 @@ class CostumeForm(UiCostumeForm, DatabaseResourceForm):
             self.costume_table.setItemDelegateForColumn(2, self.relational_delegate)
             self.costume_table.hideColumn(0)
         else:
+            self.model = None
             self.costume_table.setModel(None)
 
     @QtCore.pyqtSlot()
@@ -32,9 +34,20 @@ class CostumeForm(UiCostumeForm, DatabaseResourceForm):
         """Adds a costume to the end of the table."""
 
         if self.model:
+            # Create a new item at the bottom of the list by getting the list length.
             new_index = self.model.rowCount()
-            self.model.insertRows(new_index, 1)
-            self.costume_table.edit(self.model.index(new_index, 1))
+
+            if self.model.insertRows(new_index, 1):
+                # Immediately edit the new field if creation was a success.
+                self.costume_table.edit(self.model.index(new_index, 1))
+            else:
+                # Raise an error dialogue otherwise.
+                QtWidgets.QMessageBox.critical(
+                    self,
+                    "Could not add a new costume",
+                    "Could not add a new costume.",
+                    QtWidgets.QMessageBox.Ok,
+                )
 
     @QtCore.pyqtSlot()
     def remove_costumes(self):
