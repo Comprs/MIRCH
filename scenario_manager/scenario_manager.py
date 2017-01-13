@@ -12,6 +12,8 @@ from forms.costume import CostumeForm
 MAIN_WINDOW_SOURCE = os.path.join(UI_SOURCE_LOCATION, "form_scenario_manager_main.ui")
 UiScenarioManagerMainWindow = PyQt5.uic.loadUiType(MAIN_WINDOW_SOURCE)[0]
 
+DATABASE_FILE_EXTENSION = ".db"
+
 class ScenarioManagerMainWindow(UiScenarioManagerMainWindow, QtWidgets.QMainWindow):
     """This class represents the main window of the application"""
 
@@ -36,53 +38,86 @@ class ScenarioManagerMainWindow(UiScenarioManagerMainWindow, QtWidgets.QMainWind
         # Disable the tab widget whilst no database is open.
         self.central_tab_widget.setEnabled(False)
 
-    @QtCore.pyqtSlot()
-    def open_database(self):
-        """Open or change the working database"""
+    def _open_database_chooser(self):
+        """Open a dialogue to select a database to use or create. Return the value as a string or
+        return None if the user cancelled.
+        """
 
         # Define the dialogue parameters
         dialogue = QtWidgets.QFileDialog(self)
         dialogue.setAcceptMode(QtWidgets.QFileDialog.AcceptSave)
         dialogue.setFileMode(QtWidgets.QFileDialog.AnyFile)
         dialogue.setOptions(QtWidgets.QFileDialog.DontConfirmOverwrite)
-        dialogue.setNameFilter("Databases (*.db)")
+        dialogue.setNameFilter("Databases (*{})".format(DATABASE_FILE_EXTENSION))
         dialogue.setNameFilters([
-            "Databases (*.db)",
+            "Databases (*{})".format(DATABASE_FILE_EXTENSION),
             "All Files (*.*)",
         ])
 
-        # Get a result from the dialogue. If the user cancel, stop changing the database.
+        # Get a result from the dialogue. If the user cancelled, propagate the "None".
         if not dialogue.exec_():
-            return
-        database_name = dialogue.selectedFiles()[0]
+            return None
+        # The dialogue returns a list. Extract the first element to return a single item.
+        return dialogue.selectedFiles()[0]
 
+    @staticmethod
+    def _correct_filename(filename, *, exists = os.path.exists):
         # Make sure the correct file extension is in the filename if we are the create the
         # database.
-        if os.path.splitext(database_name)[1] != ".db" and not os.path.exists(database_name):
-            database_name += ".db"
+        has_correct_file_extension = os.path.splitext(filename)[1] != DATABASE_FILE_EXTENSION
+        file_exists = exists(filename)
+        if has_correct_file_extension and not file_exists:
+            return filename + DATABASE_FILE_EXTENSION
+        else:
+            return filename
+
+    @staticmethod
+    def _open_database_with_name(database_name):
+        """Open a SQL database with the given filename."""
 
         # Open the new database.
-        new_database = QtSql.QSqlDatabase.addDatabase("QSQLITE")
-        new_database.setDatabaseName(database_name)
-        new_database.open()
+        database = QtSql.QSqlDatabase.addDatabase("QSQLITE")
+        database.setDatabaseName(database_name)
+        database.open()
 
         # Check that the database opened correctly. Display an error dialogue if it didn't and
         # abort.
-        if new_database.isOpenError() or not new_database.isOpen():
+        if database.isOpenError() or not database.isOpen():
             msg_box = QtWidgets.QMessageBox(self)
             msg_box.setText("Error opening the database.")
             msg_box.setInformativeText(
                 "There was an error opening the database. The driver gave the following error "\
-                "message: \"{}\"".format(new_database.lastError().text().strip())
+                "message: \"{}\"".format(database.lastError().text().strip())
             )
             msg_box.setStandardButtons(QtWidgets.QMessageBox.Ok)
             msg_box.setDefaultButton(QtWidgets.QMessageBox.Ok)
             msg_box.setIcon(QtWidgets.Critical)
             msg_box.exec_()
+            return None
+        else:
+            return database
+
+    @QtCore.pyqtSlot()
+    def open_database(self):
+        """Open or change the working database"""
+
+        # Get a filename from the user. The function may return None to indicate the operation was
+        # canceled.
+        database_name = self._open_database_chooser()
+        if database_name is None:
+            return
+
+        # Transform the filename to the correct form.
+        database_name = self._correct_filename(database_name)
+
+        # Open the new database. It may be none indicating something went wrong; an error message
+        # will have been displayed by this point, so we should just stop here.
+        new_database = self._open_database_with_name(database_name)
+        if new_database is None:
             return
 
         # Swap out the old database if it exists and replace it with the new one.
-        if self._database:
+        if self._database is not None:
             self._database.close()
         self._database = new_database
 
