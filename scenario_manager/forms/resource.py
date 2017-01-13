@@ -21,7 +21,7 @@ class ResourceForm(UiResourceFrom, DatabaseResourceForm):
         if self.database:
             self.model = ResourceModel(self, self.database, self.resource_root)
             self.resource_list.setModel(self.model)
-            self.resource_list.setModelColumn(1)
+            self.resource_list.setModelColumn(self.model.fieldIndex("filename"))
         else:
             self.model = None
             self.resource_list.setModel(None)
@@ -77,7 +77,7 @@ class ResourceModel(QtSql.QSqlTableModel):
         # This method is overridden in order to provide icons of the resources themselves. This is
         # done by providing a valid icon for the role "DecorationRole".
 
-        if index.column() == 1 and role == Qt.DecorationRole:
+        if index.column() == self.fieldIndex("filename") and role == Qt.DecorationRole:
             return resource_icon(self, index, self.resource_root)
         else:
             # Don't touch the other columns/roles. Delegate this to the parent.

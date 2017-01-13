@@ -23,8 +23,11 @@ class CostumeForm(UiCostumeForm, DatabaseResourceForm):
         if self.database:
             self.model = CostumeModel(self, self.database, self.resource_root)
             self.costume_table.setModel(self.model)
-            self.costume_table.setItemDelegateForColumn(2, self.relational_delegate)
-            self.costume_table.hideColumn(0)
+            self.costume_table.setItemDelegateForColumn(
+                self.model.fieldIndex("filename"),
+                self.relational_delegate,
+            )
+            self.costume_table.hideColumn(self.model.fieldIndex("id"))
         else:
             self.model = None
             self.costume_table.setModel(None)
@@ -75,7 +78,7 @@ class CostumeModel(QtSql.QSqlRelationalTableModel):
         self.setTable("costumes")
         self.setRelation(2, QtSql.QSqlRelation("resources", "id", "filename"))
         self.setJoinMode(QtSql.QSqlRelationalTableModel.LeftJoin)
-        self.setEditStrategy(QtSql.QSqlTableModel.OnRowChange)
+        self.setEditStrategy(QtSql.QSqlTableModel.OnFieldChange)
         self.select()
         self.resource_root = resource_root
 
@@ -83,7 +86,7 @@ class CostumeModel(QtSql.QSqlRelationalTableModel):
         # This method is overridden in order to provide icons of the resources themselves. This is
         # done by providing a valid icon for the role "DecorationRole".
 
-        if index.column() == 2 and role == Qt.DecorationRole:
+        if index.column() == self.fieldIndex("filename") and role == Qt.DecorationRole:
             return resource_icon(self, index, self.resource_root)
         else:
             # Don't touch the other columns/roles. Delegate this to the parent.
