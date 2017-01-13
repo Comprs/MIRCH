@@ -9,7 +9,10 @@ import sip
 
 # Define the location of the main module. This is to help define other locations relative to this
 # point later one.
-ROOT_MODULE_LOCATION = os.path.dirname(sys.modules["__main__"].__file__)
+try:
+    ROOT_MODULE_LOCATION = os.path.dirname(sys.modules["__main__"].__file__)
+except AttributeError:
+    ROOT_MODULE_LOCATION = "./"
 
 # This is the location of the "*.ui" files.
 UI_SOURCE_LOCATION = os.path.join(ROOT_MODULE_LOCATION, "ui_forms/")
