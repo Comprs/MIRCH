@@ -7,6 +7,7 @@ from PyQt5 import QtCore, QtWidgets, QtSql
 from common import UI_SOURCE_LOCATION, SCHEMA_SCRIPT
 from forms.resource import ResourceForm
 from forms.costume import CostumeForm
+from forms.character import CharacterForm
 
 # Load in the form for the main window
 MAIN_WINDOW_SOURCE = os.path.join(UI_SOURCE_LOCATION, "form_scenario_manager_main.ui")
@@ -29,6 +30,7 @@ class ScenarioManagerMainWindow(UiScenarioManagerMainWindow, QtWidgets.QMainWind
         self._tab_widgets = [
             (ResourceForm(self.central_tab_widget), "Resources"),
             (CostumeForm(self.central_tab_widget), "Costumes"),
+            (CharacterForm(self.central_tab_widget), "Character"),
         ]
 
         # Add all of the widgets into the tab widget.
