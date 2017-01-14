@@ -153,3 +153,20 @@ class ScenarioManagerMainWindow(UiScenarioManagerMainWindow, QtWidgets.QMainWind
         # Update the depended widgets with the new resource root.
         for widget, _ in self._tab_widgets:
             widget.set_resource_root(self._resource_root)
+
+    def reset_models(self):
+        for widget, _ in self._tab_widgets:
+            widget.reset_model()
+
+    def save_models(self):
+        for widget, _ in self._tab_widgets:
+            widget.save_model()
+
+    @QtCore.pyqtSlot()
+    def prepare_change_tab(self):
+        self.save_models()
+        self.reset_models()
+
+    def close(self):
+        self.save_models()
+        return super().close()
