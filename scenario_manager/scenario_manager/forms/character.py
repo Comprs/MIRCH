@@ -15,6 +15,10 @@ class CharacterForm(UiCharacterForm, DatabaseResourceForm):
         self._character_model = None
         self._character_widget_mapper = QtWidgets.QDataWidgetMapper()
 
+        # Define the connection here rather than in the .ui file like everything else because it
+        # mysteriously doesn't work when defined like than.
+        self.character_list.clicked.connect(self.update_selected_character)
+
     def reset_model(self):
         if self.database:
             self._character_model = CharacterModel(self, self.database, self.resource_root)
@@ -77,6 +81,10 @@ class CharacterForm(UiCharacterForm, DatabaseResourceForm):
             for index in self.character_list.selectedIndexes():
                 self.model.removeRow(index.row(), index.parent())
             self.model.select()
+
+    @QtCore.pyqtSlot(QtCore.QModelIndex)
+    def update_selected_character(self, index):
+        self._character_widget_mapper.setCurrentModelIndex(index)
 
 class CharacterModel(QtSql.QSqlRelationalTableModel):
     def __init__(self, parent, database, resource_root = None):
