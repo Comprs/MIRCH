@@ -74,6 +74,7 @@ class CharacterForm(UiCharacterForm, DatabaseResourceForm):
                 new_item_index = self._character_model.index(new_index, 1)
                 self._character_widget_mapper.setCurrentModelIndex(new_item_index)
                 self.selection_weight_spin.setValue(100)
+                self.resource_combo.setCurrentIndex(-1)
                 self.character_list.edit(new_item_index)
             else:
                 QtWidgets.QMessageBox.critical(
