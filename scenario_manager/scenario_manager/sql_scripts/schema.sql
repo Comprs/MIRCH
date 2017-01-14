@@ -44,9 +44,9 @@ CREATE TABLE question_intentions (
 CREATE TABLE costumes (
 	id INTEGER NOT NULL, 
 	description TEXT NOT NULL, 
-	resource INTEGER, 
+	resource INTEGER NOT NULL, 
 	PRIMARY KEY (id), 
-	FOREIGN KEY(resource) REFERENCES resources (id) ON DELETE SET NULL
+	FOREIGN KEY(resource) REFERENCES resources (id)
 );
 CREATE TABLE clue_motive_requirement (
 	id INTEGER NOT NULL, 
@@ -61,10 +61,10 @@ CREATE TABLE props (
 	name TEXT NOT NULL, 
 	description TEXT NOT NULL, 
 	must_be_clue BOOLEAN DEFAULT '0' NOT NULL, 
-	resource INTEGER, 
+	resource INTEGER NOT NULL, 
 	PRIMARY KEY (id), 
 	CHECK (must_be_clue IN (0, 1)), 
-	FOREIGN KEY(resource) REFERENCES resources (id) ON DELETE SET NULL
+	FOREIGN KEY(resource) REFERENCES resources (id)
 );
 CREATE TABLE question_and_responses (
 	id INTEGER NOT NULL, 
@@ -82,10 +82,10 @@ CREATE TABLE room_templates (
 	width INTEGER DEFAULT '1' NOT NULL, 
 	height INTEGER DEFAULT '1' NOT NULL, 
 	selection_weight INTEGER DEFAULT '100' NOT NULL, 
-	background_resource INTEGER, 
+	background_resource INTEGER NOT NULL, 
 	room_type INTEGER NOT NULL, 
 	PRIMARY KEY (id), 
-	FOREIGN KEY(background_resource) REFERENCES room_templates (id) ON DELETE SET NULL, 
+	FOREIGN KEY(background_resource) REFERENCES room_templates (id), 
 	FOREIGN KEY(room_type) REFERENCES room_types (id) ON DELETE CASCADE
 );
 CREATE TABLE characters (
@@ -93,9 +93,9 @@ CREATE TABLE characters (
 	name TEXT NOT NULL, 
 	description TEXT NOT NULL, 
 	selection_weight INTEGER DEFAULT '100' NOT NULL, 
-	resource INTEGER, 
+	resource INTEGER NOT NULL, 
 	PRIMARY KEY (id), 
-	FOREIGN KEY(resource) REFERENCES resources (id) ON DELETE SET NULL
+	FOREIGN KEY(resource) REFERENCES resources (id)
 );
 CREATE TABLE clue_means_requirements (
 	id INTEGER NOT NULL, 
