@@ -32,12 +32,8 @@ class CostumeForm(UiCostumeForm, DatabaseResourceForm):
             self._model = None
             self.costume_table.setModel(None)
 
-    @QtCore.pyqtSlot()
-    def add_costume(self):
-        """Adds a costume to the end of the table."""
-
-        if self._model:
-            # Make sure we have written out to the database.
+    def save_model(self):
+        if self._model is not None:
             if not self._model.submit():
                 QtWidgets.QMessageBox.critical(
                     self,
@@ -45,7 +41,18 @@ class CostumeForm(UiCostumeForm, DatabaseResourceForm):
                     "Could not write the costume data. The data is likely invalid.",
                     QtWidgets.QMessageBox.Ok,
                 )
+                return False
+        return True
+
+    @QtCore.pyqtSlot()
+    def add_costume(self):
+        """Adds a costume to the end of the table."""
+
+        if self._model:
+            # Make sure we have written out to the database.
+            if not self.save_model():
                 return
+
             # Create a new item at the bottom of the list by getting the list length.
             new_index = self._model.rowCount()
 

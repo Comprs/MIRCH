@@ -71,6 +71,11 @@ class DatabaseResourceForm(QtWidgets.QWidget, metaclass = QtABCMeta):
         """Adapts the form to a change of database or resource root."""
         pass
 
+    @abstractmethod
+    def save_model(self):
+        """Requests the form to save the models"""
+        pass
+
 def resource_icon(model, index, resource_root = None):
     """Retrieve an icon for the given model, index and resource root. This will use the path data
     in the same model and index to infer the path of the icon (which will be the resource itself).

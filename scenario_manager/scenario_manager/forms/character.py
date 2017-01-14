@@ -49,10 +49,8 @@ class CharacterForm(UiCharacterForm, DatabaseResourceForm):
         else:
             self.character_list.setModel(None)
 
-    @QtCore.pyqtSlot()
-    def add_character(self):
-        if self._character_model:
-            # Make sure we have written out to the database.
+    def save_model(self):
+        if self._character_model is not None:
             if not self._character_model.submit():
                 QtWidgets.QMessageBox.critical(
                     self,
@@ -60,8 +58,18 @@ class CharacterForm(UiCharacterForm, DatabaseResourceForm):
                     "Could not write the character data. The data is likely invalid.",
                     QtWidgets.QMessageBox.Ok,
                 )
+                return False
+        return True
+
+    @QtCore.pyqtSlot()
+    def add_character(self):
+        if self._character_model:
+            # Make sure we have written out to the database.
+            if not self.save_model():
                 return
+
             new_index = self._character_model.rowCount()
+
             if self._character_model.insertRows(new_index, 1):
                 new_item_index = self._character_model.index(new_index, 1)
                 self._character_widget_mapper.setCurrentModelIndex(new_item_index)

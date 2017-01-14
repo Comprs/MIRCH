@@ -27,12 +27,8 @@ class ResourceForm(UiResourceFrom, DatabaseResourceForm):
             self._model = None
             self.resource_list.setModel(None)
 
-    @QtCore.pyqtSlot()
-    def add_resource(self):
-        """Adds a resource to the end of the list."""
-
-        if self._model:
-            # Make sure we have written out to the database.
+    def save_model(self):
+        if self._model is not None:
             if not self._model.submit():
                 QtWidgets.QMessageBox.critical(
                     self,
@@ -40,9 +36,20 @@ class ResourceForm(UiResourceFrom, DatabaseResourceForm):
                     "Could not write the resource data. The data is likely invalid.",
                     QtWidgets.QMessageBox.Ok,
                 )
-                return
+                return False
+        return True
+
+    @QtCore.pyqtSlot()
+    def add_resource(self):
+        """Adds a resource to the end of the list."""
+
+        if self._model:
+            # Make sure we have written out to the database.
+            self.save_model()
+
             # Create a new item at the bottom of the list by getting the list length.
             new_index = self._model.rowCount()
+
             if self._model.insertRows(new_index, 1):
                 # Immediately edit the new field if creation was a success.
                 self.resource_list.edit(self._model.index(new_index, 1))
